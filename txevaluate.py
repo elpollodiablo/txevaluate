@@ -45,7 +45,12 @@ class Evaluator():
         return [_translate_arg(arg) for arg in args]
 
     def _call_op(self, expression):
+        if isinstance(expression, bool):
+            return expression
+
         def handle_expression_cb(result):
+            if isinstance(result, bool):
+                return result
             op = result[0]
             args = result[1:]
             return self.ops[op](self, * args)            
@@ -61,7 +66,7 @@ class Evaluator():
             return self.ops[op](self, * args)
             
     def _op_not(self, expression):
-        return not self._call_op(expression)
+        return not self._call_op(self._translate_arg(expression))
     ops["!"] = _op_not
 
     def _op_or(self, *expressions):
@@ -137,7 +142,7 @@ if __name__ == "__main__":
 
     def never_executed():
         print "Execution stops before this is printed"
-        return defer.succeed(True)
+        return defer.succeed(TRUE())
 
     def some_deferred_list():
         # let's pretend we were getting that from a database
