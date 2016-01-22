@@ -62,6 +62,7 @@ class Evaluator():
         else:
             log.err("no such operand: %s" % op)
             raise Exception()
+
     def _call_op(self, expression):
         if expression in (True, False, None):
             return defer.succeed(expression or False)
@@ -84,14 +85,16 @@ class Evaluator():
             
     def _op_not(self, expression):
         #print "not", expression
-		def op_not_cb(expression):
-			#print "in not returning", expression, not expression
-			return not expression
-		expression_d = self._call_op(self._translate_arg(expression))
-		expression_d.addCallback(op_not_cb)
-		return expression_d
+        def op_not_cb(expression):
+            #print "in not returning", expression, not expression
+            return not expression
+        expression_d = self._call_op(self._translate_arg(expression))
+        expression_d.addCallback(op_not_cb)
+        return expression_d
 
     def _op_or(self, *expressions):
+        if len(expressions) < 2:
+            raise ValueError("operator OR needs at least two operands")
         def or_cb(result, expressions):
             if result:
                 #print "true result was", result
@@ -109,6 +112,8 @@ class Evaluator():
         return or_cb(False, expressions)
 
     def _op_and(self, *expressions):
+        if len(expressions) < 2:
+            raise ValueError("operator AND needs at least two operands")
         def and_cb(result, expressions):
             #print "result and expressions", result, expressions
             if not result:
